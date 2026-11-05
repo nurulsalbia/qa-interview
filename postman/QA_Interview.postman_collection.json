@@ -1,0 +1,130 @@
+{
+  "info": {
+    "_postman_id": "41f09bbd-2899-4c78-9bb1-e93f02241a51",
+    "name": "QA Interview API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "watchlist_post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", () => {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response time < 2000ms\", () => {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "pm.test(\"Success message returned\", () => {",
+              "    const body = pm.response.json(); // body is JSON even though Content-Type is text/plain",
+              "    pm.expect(body.message).to.eql(\"Added to watchlist.\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"symbol\": \"AAPL\",\n  \"name\": \"Apple Inc.\",\n  \"price\": 150.54,\n  \"change\": 0.5,\n  \"change_percent\": 0.5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/watchlist_post",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "watchlist_post"
+          ]
+        }
+      }
+    },
+    {
+      "name": "watchlist_get",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response time < 2000ms\", () => {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "const body = pm.response.json(); // works even though Content-Type is text/plain",
+              "",
+              "pm.test(\"Response is an array\", () => {",
+              "    pm.expect(body).to.be.an(\"array\");",
+              "});",
+              "",
+              "pm.test(\"Each item has the expected fields\", () => {",
+              "    body.forEach(item => {",
+              "        pm.expect(item).to.include.all.keys(",
+              "            \"id\", \"user_id\", \"symbol\", \"name\", \"price\", \"change\", \"change_percent\"",
+              "        );",
+              "    });",
+              "});",
+              "",
+              "pm.test(\"AAPL is in the watchlist\", () => {",
+              "    const aapl = body.find(i => i.symbol === \"AAPL\");",
+              "    pm.expect(aapl, \"AAPL not found in watchlist\").to.exist;",
+              "    pm.expect(aapl.name).to.eql(\"Apple Inc.\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/watchlist_get?username={{username}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "watchlist_get"
+          ],
+          "query": [
+            {
+              "key": "username",
+              "value": "{{username}}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://qainterview.netlify.app/.netlify/functions"
+    },
+    {
+      "key": "username",
+      "value": "musa"
+    }
+  ]
+}
