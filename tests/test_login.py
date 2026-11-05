@@ -1,4 +1,5 @@
 import re
+from uuid import uuid4
 
 import pytest
 from playwright.sync_api import expect
@@ -22,6 +23,42 @@ def test_login_with_wrong_password_shows_error(login_page, dashboard_page, crede
     username, _ = credentials
 
     login_page.login(username, "Definitely-wrong-password1!")
+
+    expect(login_page.error_message).to_be_visible()
+    expect(login_page.page).not_to_have_url(dashboard_page.URL_PATTERN)
+
+
+@pytest.mark.negative
+def test_login_rejects_empty_credentials(login_page):
+    """The login form requires both a username and a password."""
+    username_is_required = login_page.username_input.evaluate(
+        "field => field.validity.valueMissing"
+    )
+    password_is_required = login_page.password_input.evaluate(
+        "field => field.validity.valueMissing"
+    )
+
+    assert username_is_required
+    assert password_is_required
+
+
+@pytest.mark.negative
+def test_login_with_unknown_username_shows_generic_error(
+    login_page, dashboard_page
+):
+    """Unknown usernames receive the same generic error as invalid passwords."""
+    username = f"missing-{uuid4().hex}"
+    login_page.login(username, "Definitely-wrong-password1!")
+
+    expect(login_page.error_message).to_be_visible()
+    expect(login_page.page).not_to_have_url(dashboard_page.URL_PATTERN)
+
+
+@pytest.mark.negative
+def test_login_password_is_case_sensitive(login_page, dashboard_page, credentials):
+    """Changing the case of a valid password must prevent login."""
+    username, password = credentials
+    login_page.login(username, password.swapcase())
 
     expect(login_page.error_message).to_be_visible()
     expect(login_page.page).not_to_have_url(dashboard_page.URL_PATTERN)
