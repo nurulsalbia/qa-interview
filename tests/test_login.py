@@ -19,7 +19,7 @@ def test_successful_login(login_page, dashboard_page, credentials):
 
 @pytest.mark.negative
 def test_login_with_wrong_password_shows_error(login_page, dashboard_page, credentials):
-    """Bonus: wrong password keeps the user on the login page with an error."""
+    """:Wrong password keeps the user on the login page with an error."""
     username, _ = credentials
 
     login_page.login(username, "Definitely-wrong-password1!")
